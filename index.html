@@ -1,0 +1,937 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Concertación del Salario Mínimo 2027</title>
+<style>
+:root{
+  --bg:#ffffff;
+  --ink:#111111;
+  --muted:#6b6b6b;
+  --subtle:#9a9a9a;
+  --line:#ececec;
+  --border:#dcdcdc;
+  --soft:#fafafa;
+  --red:#d0021b;
+  --slate:#555555;
+  color-scheme:light;
+  padding-top:env(safe-area-inset-top,0px);
+  padding-bottom:env(safe-area-inset-bottom,0px);
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{
+  margin:0;
+  padding:0;
+  background:var(--bg);
+  color:var(--ink);
+  font-family:"Helvetica Neue",Helvetica,Arial,sans-serif;
+  line-height:1.45;
+  -webkit-font-smoothing:antialiased;
+  overflow-x:hidden;
+}
+
+/* Contenedor compacto pensado para incrustación (embed) en nota web */
+.embed-wrap{
+  max-width:680px;
+  margin:0 auto;
+  padding:20px 16px 28px;
+}
+@media (min-width:600px){
+  .embed-wrap{padding:28px 22px 36px}
+}
+
+button{font:inherit;color:inherit;cursor:pointer}
+
+/* Cabecera editorial minimalista */
+.kicker{
+  font-size:10.5px;
+  font-weight:700;
+  letter-spacing:.08em;
+  text-transform:uppercase;
+  color:var(--muted);
+  margin-bottom:8px;
+}
+.kicker b{color:var(--red);font-weight:700}
+
+h1{
+  border-top:4px solid var(--red);
+  padding-top:16px;
+  font:700 26px/1.14 Georgia,"Times New Roman",serif;
+  margin:0 0 8px;
+  letter-spacing:-.015em;
+}
+@media (min-width:600px){
+  h1{font-size:32px;padding-top:18px}
+}
+
+.lead{
+  color:var(--muted);
+  font-size:14.5px;
+  margin:0 0 18px;
+}
+.lead strong{color:var(--ink);font-weight:600}
+
+/* Controles compactos */
+.toolbar{
+  display:flex;
+  flex-wrap:wrap;
+  align-items:center;
+  justify-content:space-between;
+  gap:10px 12px;
+  padding:10px 0;
+  border-top:1px solid var(--line);
+  border-bottom:1px solid var(--line);
+  margin-bottom:16px;
+}
+
+.seg{
+  display:inline-flex;
+  border:1px solid var(--border);
+  border-radius:4px;
+  overflow:hidden;
+}
+.seg button{
+  background:#fff;
+  border:0;
+  padding:6px 12px;
+  font-size:12.5px;
+  font-weight:600;
+  color:var(--muted);
+  min-height:34px;
+  transition:background .15s,color .15s;
+}
+.seg button + button{border-left:1px solid var(--border)}
+.seg button[aria-selected=true]{
+  background:var(--ink);
+  color:#fff;
+}
+
+.toggle-empty{
+  display:inline-flex;
+  align-items:center;
+  gap:7px;
+  background:transparent;
+  border:1px solid var(--border);
+  border-radius:999px;
+  padding:5px 12px;
+  font-size:12px;
+  color:var(--muted);
+  min-height:34px;
+  transition:all .15s;
+}
+.toggle-empty[aria-pressed=true]{
+  border-color:var(--ink);
+  color:var(--ink);
+  font-weight:600;
+  background:var(--soft);
+}
+.toggle-empty .dot{
+  width:7px;
+  height:7px;
+  border-radius:50%;
+  background:var(--subtle);
+}
+.toggle-empty[aria-pressed=true] .dot{background:var(--red)}
+
+/* Leyenda sutil */
+.legend{
+  display:flex;
+  flex-wrap:wrap;
+  gap:10px 16px;
+  font-size:11.5px;
+  color:var(--muted);
+  margin-bottom:16px;
+}
+.legend span{
+  display:inline-flex;
+  align-items:center;
+  gap:6px;
+}
+.legend i{
+  display:inline-block;
+  width:10px;
+  height:10px;
+  border-radius:2px;
+}
+
+/* Tira horizontal deslizable de fechas clave (ideal en móvil) */
+.strip-wrap{
+  margin:0 -16px 18px;
+  padding:0 16px;
+}
+@media (min-width:600px){
+  .strip-wrap{margin:0 0 20px;padding:0}
+}
+.strip-label{
+  font-size:11px;
+  font-weight:700;
+  letter-spacing:.06em;
+  text-transform:uppercase;
+  color:var(--muted);
+  margin-bottom:8px;
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+}
+.strip-label span{font-weight:400;text-transform:none;letter-spacing:0;font-size:11.5px}
+
+.day-strip{
+  display:flex;
+  gap:8px;
+  overflow-x:auto;
+  scroll-snap-type:x mandatory;
+  -webkit-overflow-scrolling:touch;
+  padding-bottom:6px;
+  scrollbar-width:none;
+}
+.day-strip::-webkit-scrollbar{display:none}
+
+.chip{
+  flex:0 0 auto;
+  scroll-snap-align:start;
+  min-width:64px;
+  padding:8px 10px;
+  background:#fff;
+  border:1px solid var(--border);
+  border-top:3px solid var(--ink);
+  border-radius:4px;
+  text-align:center;
+  transition:all .15s;
+}
+.chip.type-legal{border-top-color:var(--red)}
+.chip.type-tech{border-top-color:var(--slate)}
+.chip[aria-current=true]{
+  background:var(--ink);
+  border-color:var(--ink);
+  color:#fff;
+}
+.chip.type-legal[aria-current=true]{
+  background:var(--red);
+  border-color:var(--red);
+  color:#fff;
+}
+.chip .ch-d{
+  display:block;
+  font-size:10px;
+  text-transform:uppercase;
+  letter-spacing:.05em;
+  opacity:.75;
+}
+.chip .ch-n{
+  display:block;
+  font:700 18px/1.15 Georgia,"Times New Roman",serif;
+  margin:2px 0 1px;
+}
+.chip .ch-m{
+  display:block;
+  font-size:10.5px;
+  opacity:.85;
+}
+
+/* =========================================================
+   VISTA 1: LISTA CRONOLÓGICA ESCANEABLE (MÓVIL-FIRST)
+   ========================================================= */
+.month-divider{
+  display:flex;
+  justify-content:space-between;
+  align-items:baseline;
+  border-bottom:2px solid var(--ink);
+  padding:14px 0 6px;
+  margin-top:8px;
+}
+.month-divider:first-child{margin-top:0;padding-top:4px}
+.month-divider h2{
+  font:700 20px/1.15 Georgia,"Times New Roman",serif;
+  margin:0;
+}
+.month-divider span{
+  font-size:12px;
+  color:var(--muted);
+}
+
+.agenda-group{
+  border-bottom:1px solid var(--line);
+}
+
+.day-row{
+  border-bottom:1px solid var(--line);
+  transition:background .15s;
+}
+.day-row:last-child{border-bottom:0}
+.day-row.is-empty{display:none}
+.show-all .day-row.is-empty{display:block}
+
+/* Fila inactiva / festiva compacta */
+.row-muted{
+  display:grid;
+  grid-template-columns:68px 1fr;
+  gap:12px;
+  align-items:center;
+  padding:9px 4px;
+  color:var(--subtle);
+  font-size:12.5px;
+  background:var(--soft);
+}
+.row-muted .rm-date{
+  font:400 15px/1.2 Georgia,"Times New Roman",serif;
+}
+.row-muted .rm-date small{
+  display:block;
+  font:400 10.5px "Helvetica Neue",Helvetica,Arial,sans-serif;
+  text-transform:uppercase;
+}
+
+/* Fila activa desplegable (sin saltos bruscos) */
+.row-btn{
+  width:100%;
+  appearance:none;
+  background:transparent;
+  border:0;
+  text-align:left;
+  display:grid;
+  grid-template-columns:68px 1fr 20px;
+  gap:12px;
+  align-items:start;
+  padding:13px 6px;
+  border-left:3px solid var(--ink);
+  transition:background .15s;
+}
+.day-row.type-legal .row-btn{border-left-color:var(--red)}
+.day-row.type-tech .row-btn{border-left-color:var(--slate)}
+
+.day-row.open .row-btn,
+.row-btn:hover{
+  background:var(--soft);
+}
+.day-row.type-legal.open .row-btn{
+  background:#fffafa;
+}
+
+.rb-date{
+  padding-top:1px;
+}
+.rb-num{
+  display:block;
+  font:700 21px/1.05 Georgia,"Times New Roman",serif;
+  color:var(--ink);
+}
+.day-row.type-legal .rb-num{color:var(--red)}
+.rb-day{
+  display:block;
+  font-size:11px;
+  color:var(--muted);
+  margin-top:2px;
+}
+
+.rb-body{min-width:0}
+.rb-top{
+  display:flex;
+  flex-wrap:wrap;
+  align-items:center;
+  gap:5px 8px;
+  margin-bottom:3px;
+}
+.rb-badge{
+  display:inline-block;
+  font-size:10px;
+  font-weight:700;
+  letter-spacing:.05em;
+  text-transform:uppercase;
+  padding:1px 6px;
+  border-radius:3px;
+  background:#f0f0f0;
+  color:var(--ink);
+}
+.day-row.type-legal .rb-badge{
+  background:var(--red);
+  color:#fff;
+}
+.day-row.type-tech .rb-badge{
+  background:#ececec;
+  color:var(--slate);
+}
+.rb-time{
+  font-size:12px;
+  color:var(--muted);
+}
+.rb-title{
+  font-size:14.5px;
+  font-weight:600;
+  line-height:1.32;
+  color:var(--ink);
+}
+
+.rb-chev{
+  font-size:16px;
+  line-height:1;
+  color:var(--muted);
+  padding-top:4px;
+  text-align:right;
+  transition:transform .2s;
+}
+.day-row.open .rb-chev{
+  transform:rotate(180deg);
+  color:var(--ink);
+}
+
+/* Detalle en línea dentro de la fila */
+.row-detail{
+  display:none;
+  padding:0 12px 14px 83px;
+  border-left:3px solid var(--ink);
+  background:var(--soft);
+  font-size:13.5px;
+  color:#333;
+}
+.day-row.type-legal .row-detail{
+  border-left-color:var(--red);
+  background:#fffafa;
+}
+.day-row.type-tech .row-detail{
+  border-left-color:var(--slate);
+}
+.day-row.open .row-detail{display:block}
+.row-detail p{margin:0}
+.row-detail ul{
+  margin:6px 0 0;
+  padding-left:18px;
+}
+.row-detail li{margin:3px 0}
+
+/* =========================================================
+   VISTA 2: CUADRÍCULA DE CALENDARIO (ESCRITORIO / OPCIONAL)
+   ========================================================= */
+.cal-section{margin-bottom:24px}
+.cal-wkhead{
+  display:grid;
+  grid-template-columns:repeat(5,1fr);
+  gap:6px;
+  font-size:10.5px;
+  font-weight:700;
+  letter-spacing:.06em;
+  text-transform:uppercase;
+  color:var(--muted);
+  padding:8px 0 6px;
+}
+.cal-grid{
+  display:grid;
+  grid-template-columns:repeat(5,1fr);
+  gap:6px;
+}
+.c-cell{
+  appearance:none;
+  text-align:left;
+  background:#fff;
+  border:1px solid var(--line);
+  border-radius:3px;
+  padding:8px 8px 10px;
+  min-height:94px;
+  display:flex;
+  flex-direction:column;
+  justify-content:flex-start;
+  transition:background .15s,border-color .15s;
+}
+.c-cell.empty,
+.c-cell.holiday{
+  background:var(--soft);
+  border-color:#efefef;
+  cursor:default;
+}
+.c-cell.active{
+  cursor:pointer;
+  border-top:3px solid var(--ink);
+}
+.c-cell.type-legal{border-top-color:var(--red)}
+.c-cell.type-tech{border-top-color:var(--slate)}
+.c-cell.active:hover{background:var(--soft)}
+.c-cell.selected{
+  outline:2px solid var(--ink);
+  outline-offset:-2px;
+}
+.c-cell.type-legal.selected{
+  outline-color:var(--red);
+  background:#fffafa;
+}
+.c-num{
+  font:700 17px/1 Georgia,"Times New Roman",serif;
+  margin-bottom:5px;
+}
+.c-cell.empty .c-num,
+.c-cell.holiday .c-num{
+  color:var(--subtle);
+  font-weight:400;
+}
+.c-sub{
+  font-size:11px;
+  line-height:1.25;
+  color:var(--ink);
+  font-weight:600;
+  display:-webkit-box;
+  -webkit-line-clamp:3;
+  -webkit-box-orient:vertical;
+  overflow:hidden;
+}
+.c-cell.holiday .c-sub{
+  color:var(--subtle);
+  font-weight:400;
+}
+
+/* Tarjeta de detalle fija debajo de la cuadrícula */
+.grid-detail{
+  background:var(--soft);
+  border:1px solid var(--line);
+  border-left:4px solid var(--ink);
+  padding:14px 16px;
+  margin-top:14px;
+}
+.grid-detail.type-legal{
+  border-left-color:var(--red);
+  background:#fffafa;
+}
+.grid-detail.type-tech{border-left-color:var(--slate)}
+.gd-meta{
+  font-size:11.5px;
+  color:var(--muted);
+  margin-bottom:4px;
+}
+.gd-meta b{
+  text-transform:uppercase;
+  letter-spacing:.05em;
+  color:var(--ink);
+}
+.grid-detail.type-legal .gd-meta b{color:var(--red)}
+.gd-title{
+  font:700 17px/1.25 Georgia,"Times New Roman",serif;
+  margin:0 0 5px;
+}
+.gd-desc{
+  font-size:13.5px;
+  color:#333;
+  margin:0;
+}
+.gd-list{
+  margin:6px 0 0;
+  padding-left:18px;
+  font-size:13.5px;
+  color:#333;
+}
+
+/* Mensaje de aviso si la cuadrícula se abre en pantalla muy estrecha */
+.mobile-grid-hint{
+  display:none;
+  font-size:12px;
+  color:var(--muted);
+  background:var(--soft);
+  border:1px solid var(--line);
+  padding:8px 10px;
+  border-radius:4px;
+  margin-bottom:10px;
+}
+@media (max-width:540px){
+  .mobile-grid-hint{display:block}
+  .cal-scroll{
+    overflow-x:auto;
+    -webkit-overflow-scrolling:touch;
+    padding-bottom:6px;
+  }
+  .cal-wkhead,.cal-grid{min-width:520px}
+}
+
+[hidden]{display:none !important}
+
+/* Pie editorial */
+.src{
+  margin-top:26px;
+  padding-top:12px;
+  border-top:1px solid var(--line);
+  font-size:11.5px;
+  color:var(--muted);
+  display:flex;
+  flex-wrap:wrap;
+  justify-content:space-between;
+  gap:6px 12px;
+}
+.src strong{color:var(--ink);font-weight:600}
+</style>
+</head>
+<body>
+<div class="embed-wrap" id="app">
+
+  <div class="kicker"><b>Ministerio del Trabajo</b> · Colombia</div>
+  <h1>Concertación del Salario Mínimo 2027</h1>
+  <p class="lead">Cronograma oficial de sesiones de la <strong>CPCPSL</strong> y vencimientos de la Ley 278 de 1996 (noviembre y diciembre de 2026).</p>
+
+  <!-- Barra de controles -->
+  <div class="toolbar">
+    <div class="seg" role="tablist" aria-label="Formato de visualización">
+      <button type="button" role="tab" id="tab-list" data-view="list" aria-selected="true">Lista cronológica</button>
+      <button type="button" role="tab" id="tab-grid" data-view="grid" aria-selected="false">Calendario</button>
+    </div>
+
+    <button type="button" class="toggle-empty" id="btn-empty" aria-pressed="false">
+      <span class="dot" aria-hidden="true"></span>
+      <span>Mostrar días sin sesión</span>
+    </button>
+  </div>
+
+  <!-- Leyenda -->
+  <div class="legend" aria-hidden="true">
+    <span><i style="background:#111111"></i>Sesión CPCPSL</span>
+    <span><i style="background:#d0021b"></i>Hito legal (Ley 278)</span>
+    <span><i style="background:#555555"></i>Sin sesión (DANE / Trámite)</span>
+  </div>
+
+  <!-- Tira horizontal deslizable de fechas clave -->
+  <div class="strip-wrap">
+    <div class="strip-label">
+      Ir a fecha clave
+      <span>Desliza →</span>
+    </div>
+    <div class="day-strip" id="day-strip" role="navigation" aria-label="Selector rápido de fechas clave"></div>
+  </div>
+
+  <!-- VISTA 1: LISTA CRONOLÓGICA (MÓVIL-FIRST) -->
+  <div id="view-list"></div>
+
+  <!-- VISTA 2: CALENDARIO LUNES A VIERNES -->
+  <div id="view-grid" hidden>
+    <div class="mobile-grid-hint">Desliza horizontalmente para ver los cinco días hábiles de cada semana o cambia a <strong>Lista cronológica</strong>.</div>
+    <div id="grid-container"></div>
+    <div class="grid-detail" id="grid-detail" aria-live="polite"></div>
+  </div>
+
+  <footer class="src">
+    <span>Fuente: Ministerio del Trabajo · Comisión Permanente de Concertación de Políticas Salariales y Laborales.</span>
+    <strong>#EnEstaMesaCabemosTodos</strong>
+  </footer>
+
+</div>
+
+<script>
+(function(){
+  var $ = function(id){ return document.getElementById(id); };
+
+  var DAYS = [
+    /* NOVIEMBRE 2026 */
+    { id:"2026-11-23", month:"Noviembre 2026", shortM:"Nov", num:"23", day:"Lunes", shortD:"Lun", state:"empty", note:"Sin actividad programada" },
+    { id:"2026-11-24", month:"Noviembre 2026", shortM:"Nov", num:"24", day:"Martes", shortD:"Mar", state:"empty", note:"Sin actividad programada" },
+    { id:"2026-11-25", month:"Noviembre 2026", shortM:"Nov", num:"25", day:"Miércoles", shortD:"Mié", state:"empty", note:"Sin actividad programada" },
+    {
+      id:"2026-11-26", month:"Noviembre 2026", shortM:"Nov", num:"26", day:"Jueves", shortD:"Jue",
+      state:"active", type:"sess", badge:"Sesión · Subcomisión",
+      time:"9:00 a.m. - 12:00 m.",
+      title:"Subcomisión de productividad",
+      desc:"Presentación del DANE: productividad total de los factores."
+    },
+    {
+      id:"2026-11-27", month:"Noviembre 2026", shortM:"Nov", num:"27", day:"Viernes", shortD:"Vie",
+      state:"active", type:"sess", badge:"Sesión CPCPSL",
+      time:"9:00 a.m. - 1:00 p.m.",
+      title:"Instalación de mesa de concertación del salario mínimo",
+      desc:"Presentación del DANE:",
+      bullets:[
+        "Presentación del PIB hasta el III trimestre de 2026",
+        "Cuentas nacionales de transferencias",
+        "Presentación del Mercado Laboral"
+      ]
+    },
+
+    /* DICIEMBRE 2026 */
+    { id:"2026-11-30", month:"Diciembre 2026", shortM:"Nov", num:"30", day:"Lunes (Nov)", shortD:"Lun", state:"empty", note:"Sin actividad programada" },
+    { id:"2026-12-01", month:"Diciembre 2026", shortM:"Dic", num:"01", day:"Martes", shortD:"Mar", state:"empty", note:"Sin actividad programada" },
+    { id:"2026-12-02", month:"Diciembre 2026", shortM:"Dic", num:"02", day:"Miércoles", shortD:"Mié", state:"empty", note:"Sin actividad programada" },
+    { id:"2026-12-03", month:"Diciembre 2026", shortM:"Dic", num:"03", day:"Jueves", shortD:"Jue", state:"empty", note:"Sin actividad programada" },
+    { id:"2026-12-04", month:"Diciembre 2026", shortM:"Dic", num:"04", day:"Viernes", shortD:"Vie", state:"empty", note:"Sin actividad programada" },
+    {
+      id:"2026-12-07", month:"Diciembre 2026", shortM:"Dic", num:"07", day:"Lunes", shortD:"Lun",
+      state:"active", type:"tech", badge:"Sin sesión · DANE",
+      time:"Sin sesión de la CPCPSL",
+      title:"Publicación del IPC de noviembre por el DANE",
+      desc:"Divulgación del dato oficial de inflación de noviembre por parte del DANE. Jornada sin sesión de la CPCPSL."
+    },
+    { id:"2026-12-08", month:"Diciembre 2026", shortM:"Dic", num:"08", day:"Martes", shortD:"Mar", state:"holiday", note:"Festivo" },
+    {
+      id:"2026-12-09", month:"Diciembre 2026", shortM:"Dic", num:"09", day:"Miércoles", shortD:"Mié",
+      state:"active", type:"sess", badge:"Sesión CPCPSL",
+      time:"9:00 a.m. - 1:00 p.m.",
+      title:"Mesa de concertación del salario mínimo",
+      desc:"Sesión plenaria de la Mesa de concertación del salario mínimo."
+    },
+    {
+      id:"2026-12-10", month:"Diciembre 2026", shortM:"Dic", num:"10", day:"Jueves", shortD:"Jue",
+      state:"active", type:"sess", badge:"Sesión CPCPSL",
+      time:"9:00 a.m. - 12:00 m.",
+      title:"Presentación de propuestas del incremento del salario mínimo",
+      desc:"Presentación formal de las propuestas de incremento del salario mínimo."
+    },
+    {
+      id:"2026-12-11", month:"Diciembre 2026", shortM:"Dic", num:"11", day:"Viernes", shortD:"Vie",
+      state:"active", type:"sess", badge:"Sesión CPCPSL",
+      time:"9:00 a.m. - 12:00 m.",
+      title:"Jornadas de concertación",
+      desc:"Jornadas de concertación de la CPCPSL."
+    },
+    {
+      id:"2026-12-14", month:"Diciembre 2026", shortM:"Dic", num:"14", day:"Lunes", shortD:"Lun",
+      state:"active", type:"sess", badge:"Sesión CPCPSL",
+      time:"9:00 a.m. - 12:00 m.",
+      title:"Jornadas de concertación",
+      desc:"Jornadas de concertación de la CPCPSL."
+    },
+    {
+      id:"2026-12-15", month:"Diciembre 2026", shortM:"Dic", num:"15", day:"Martes", shortD:"Mar",
+      state:"active", type:"legal", badge:"Hito legal",
+      time:"Ley 278 · Art. 8 parágrafo inc. 1",
+      title:"Primer vencimiento legal para la concertación del salario mínimo",
+      desc:"Primer vencimiento legal para la concertación del salario mínimo (Ley 278 art 8 parágrafo inc 1)."
+    },
+    { id:"2026-12-16", month:"Diciembre 2026", shortM:"Dic", num:"16", day:"Miércoles", shortD:"Mié", state:"empty", note:"Sin actividad programada" },
+    {
+      id:"2026-12-17", month:"Diciembre 2026", shortM:"Dic", num:"17", day:"Jueves", shortD:"Jue",
+      state:"active", type:"sess", badge:"Sesión CPCPSL",
+      time:"9:00 a.m. - 12:00 m.",
+      title:"Presentación de escritos de salvedades",
+      desc:"Presentación de escritos de salvedades (Ley 278 art 8 parágrafo inc 1)."
+    },
+    {
+      id:"2026-12-18", month:"Diciembre 2026", shortM:"Dic", num:"18", day:"Viernes", shortD:"Vie",
+      state:"active", type:"sess", badge:"Sesión CPCPSL",
+      time:"8:00 a.m. - 11:00 a.m.",
+      title:"Jornada extraordinaria y estudio de las salvedades",
+      desc:"Jornada extraordinaria y estudio de las salvedades presentadas por las partes."
+    },
+    {
+      id:"2026-12-21", month:"Diciembre 2026", shortM:"Dic", num:"21", day:"Lunes", shortD:"Lun",
+      state:"active", type:"sess", badge:"Sesión CPCPSL",
+      time:"8:00 a.m. - 11:00 a.m.",
+      title:"Jornada de concertación extraordinaria",
+      desc:"Jornada de concertación extraordinaria de la CPCPSL."
+    },
+    {
+      id:"2026-12-22", month:"Diciembre 2026", shortM:"Dic", num:"22", day:"Martes", shortD:"Mar",
+      state:"active", type:"sess", badge:"Sesión CPCPSL",
+      time:"9:00 a.m. - 11:00 a.m.",
+      title:"Jornada de concertación extraordinaria",
+      desc:"Jornada de concertación extraordinaria de la CPCPSL."
+    },
+    {
+      id:"2026-12-23", month:"Diciembre 2026", shortM:"Dic", num:"23", day:"Miércoles", shortD:"Mié",
+      state:"active", type:"sess", badge:"Sesión CPCPSL",
+      time:"9:00 a.m. - 11:00 a.m.",
+      title:"Última jornada de concertación extraordinaria",
+      desc:"Última jornada de concertación extraordinaria de la CPCPSL."
+    },
+    {
+      id:"2026-12-24", month:"Diciembre 2026", shortM:"Dic", num:"24", day:"Jueves", shortD:"Jue",
+      state:"active", type:"tech", badge:"Trámite decreto",
+      time:"Sin sesión de la CPCPSL",
+      title:"Preparación del proyecto de decreto, si no hubo acuerdo",
+      desc:"Preparación del proyecto de decreto, si no hubo acuerdo en la mesa. Sin sesión de la CPCPSL."
+    },
+    { id:"2026-12-25", month:"Diciembre 2026", shortM:"Dic", num:"25", day:"Viernes", shortD:"Vie", state:"holiday", note:"Festivo" },
+    {
+      id:"2026-12-28", month:"Diciembre 2026", shortM:"Dic", num:"28", day:"Lunes", shortD:"Lun",
+      state:"active", type:"tech", badge:"Trámite decreto",
+      time:"Sin sesión de la CPCPSL",
+      title:"Envío del proyecto de decreto a la Presidencia de la República",
+      desc:"Envío del proyecto de decreto a la Presidencia de la República. Sin sesión de la CPCPSL."
+    },
+    { id:"2026-12-29", month:"Diciembre 2026", shortM:"Dic", num:"29", day:"Martes", shortD:"Mar", state:"empty", note:"Sin actividad programada" },
+    {
+      id:"2026-12-30", month:"Diciembre 2026", shortM:"Dic", num:"30", day:"Miércoles", shortD:"Mié",
+      state:"active", type:"legal", badge:"Hito legal",
+      time:"Ley 278 · Art. 8 inc. 2",
+      title:"Fecha límite de expedición del Decreto del Salario Mínimo",
+      desc:"Fecha límite de expedición del Decreto del Salario Mínimo (Ley 278 art 8 inc 2)."
+    },
+    { id:"2026-12-31", month:"Diciembre 2026", shortM:"Dic", num:"31", day:"Jueves", shortD:"Jue", state:"empty", note:"Sin actividad programada" }
+  ];
+
+  var BY_ID = {};
+  DAYS.forEach(function(d){ BY_ID[d.id] = d; });
+
+  var activeId = "2026-11-27";
+  var currentView = window.innerWidth >= 600 ? "grid" : "list";
+  var showEmpty = false;
+
+  /* 1. Renderizar tira superior de fechas clave */
+  function renderStrip(){
+    var activeDays = DAYS.filter(function(d){ return d.state === "active"; });
+    $("day-strip").innerHTML = activeDays.map(function(d){
+      return '<button type="button" class="chip type-'+d.type+'" data-id="'+d.id+'" aria-current="'+(d.id === activeId)+'">' +
+        '<span class="ch-d">'+d.shortD+'</span>' +
+        '<span class="ch-n">'+d.num+'</span>' +
+        '<span class="ch-m">'+d.shortM+'</span>' +
+      '</button>';
+    }).join("");
+  }
+
+  /* 2. Renderizar Vista Lista Cronológica (móvil-first con acordeón en línea) */
+  function renderList(){
+    var months = ["Noviembre 2026", "Diciembre 2026"];
+    $("view-list").innerHTML = months.map(function(m){
+      var list = DAYS.filter(function(d){ return d.month === m; });
+      var activeCount = list.filter(function(d){ return d.state === "active"; }).length;
+      var rowsHtml = list.map(function(d){
+        if(d.state !== "active"){
+          return '<div class="day-row is-empty" data-id="'+d.id+'">' +
+            '<div class="row-muted">' +
+              '<div class="rm-date">'+d.num+' '+d.shortM+'<small>'+d.day+'</small></div>' +
+              '<div>'+d.note+'</div>' +
+            '</div>' +
+          '</div>';
+        }
+        var isOpen = (d.id === activeId);
+        var bullets = d.bullets ? '<ul>'+d.bullets.map(function(b){ return '<li>'+b+'</li>'; }).join("")+'</ul>' : '';
+        return '<div class="day-row type-'+d.type+(isOpen ? ' open' : '')+'" id="row-'+d.id+'" data-id="'+d.id+'">' +
+          '<button type="button" class="row-btn" data-toggle="'+d.id+'" aria-expanded="'+isOpen+'">' +
+            '<div class="rb-date"><span class="rb-num">'+d.num+' '+d.shortM+'</span><span class="rb-day">'+d.day+'</span></div>' +
+            '<div class="rb-body">' +
+              '<div class="rb-top"><span class="rb-badge">'+d.badge+'</span><span class="rb-time">'+d.time+'</span></div>' +
+              '<div class="rb-title">'+d.title+'</div>' +
+            '</div>' +
+            '<div class="rb-chev" aria-hidden="true">▾</div>' +
+          '</button>' +
+          '<div class="row-detail"><p>'+d.desc+'</p>'+bullets+'</div>' +
+        '</div>';
+      }).join("");
+
+      return '<section aria-label="'+m+'">' +
+        '<div class="month-divider"><h2>'+m+'</h2><span>'+activeCount+' jornadas clave</span></div>' +
+        '<div class="agenda-group">'+rowsHtml+'</div>' +
+      '</section>';
+    }).join("");
+  }
+
+  /* 3. Renderizar Vista Cuadrícula Lunes a Viernes */
+  function renderGrid(){
+    var months = ["Noviembre 2026", "Diciembre 2026"];
+    $("grid-container").innerHTML = months.map(function(m){
+      var list = DAYS.filter(function(d){ return d.month === m; });
+      var cells = list.map(function(d){
+        if(d.state === "empty"){
+          return '<div class="c-cell empty" aria-hidden="true"><span class="c-num">'+d.num+'</span></div>';
+        }
+        if(d.state === "holiday"){
+          return '<div class="c-cell holiday"><span class="c-num">'+d.num+'</span><span class="c-sub">Festivo</span></div>';
+        }
+        var sel = (d.id === activeId) ? " selected" : "";
+        return '<button type="button" class="c-cell active type-'+d.type+sel+'" data-pick="'+d.id+'">' +
+          '<span class="c-num">'+d.num+'</span>' +
+          '<span class="c-sub">'+d.title+'</span>' +
+        '</button>';
+      }).join("");
+
+      return '<div class="cal-section">' +
+        '<div class="month-divider"><h2>'+m+'</h2><span>Lunes a viernes</span></div>' +
+        '<div class="cal-scroll">' +
+          '<div class="cal-wkhead" aria-hidden="true"><div>Lun</div><div>Mar</div><div>Mié</div><div>Jue</div><div>Vie</div></div>' +
+          '<div class="cal-grid">'+cells+'</div>' +
+        '</div>' +
+      '</div>';
+    }).join("");
+    updateGridDetail();
+  }
+
+  function updateGridDetail(){
+    var d = BY_ID[activeId];
+    if(!d || d.state !== "active") return;
+    var box = $("grid-detail");
+    box.className = "grid-detail type-" + d.type;
+    var bullets = d.bullets ? '<ul class="gd-list">'+d.bullets.map(function(b){ return '<li>'+b+'</li>'; }).join("")+'</ul>' : '';
+    box.innerHTML = '<div class="gd-meta"><b>'+d.badge+'</b> · '+d.day+' '+d.num+' de '+d.month.toLowerCase()+' · '+d.time+'</div>' +
+      '<h3 class="gd-title">'+d.title+'</h3>' +
+      '<p class="gd-desc">'+d.desc+'</p>' + bullets;
+  }
+
+  /* Sincronizar selección entre tira, lista y cuadrícula */
+  function selectDate(id, opts){
+    opts = opts || {};
+    var d = BY_ID[id];
+    if(!d || d.state !== "active") return;
+    activeId = id;
+
+    /* Tira superior */
+    document.querySelectorAll(".chip").forEach(function(c){
+      var isCur = c.dataset.id === id;
+      c.setAttribute("aria-current", isCur);
+      if(isCur && opts.scrollChip){
+        c.scrollIntoView({ behavior:"smooth", inline:"center", block:"nearest" });
+      }
+    });
+
+    /* Lista cronológica */
+    document.querySelectorAll(".day-row[id]").forEach(function(r){
+      var isMatch = r.dataset.id === id;
+      var shouldOpen = opts.toggle ? (isMatch ? !r.classList.contains("open") : false) : isMatch;
+      r.classList.toggle("open", shouldOpen);
+      var btn = r.querySelector(".row-btn");
+      if(btn) btn.setAttribute("aria-expanded", shouldOpen);
+    });
+
+    if(opts.scrollRow && currentView === "list"){
+      var targetRow = $("row-" + id);
+      if(targetRow){
+        targetRow.scrollIntoView({ behavior:"smooth", block:"nearest" });
+      }
+    }
+
+    /* Cuadrícula */
+    document.querySelectorAll(".c-cell.active").forEach(function(c){
+      c.classList.toggle("selected", c.dataset.pick === id);
+    });
+    updateGridDetail();
+  }
+
+  function setView(view){
+    currentView = view;
+    $("tab-list").setAttribute("aria-selected", view === "list");
+    $("tab-grid").setAttribute("aria-selected", view === "grid");
+    $("view-list").hidden = (view !== "list");
+    $("view-grid").hidden = (view !== "grid");
+    $("btn-empty").hidden = (view !== "list");
+  }
+
+  /* Inicialización */
+  renderStrip();
+  renderList();
+  renderGrid();
+  setView(currentView);
+
+  /* Delegación de eventos */
+  document.addEventListener("click", function(e){
+    var chip = e.target.closest(".chip");
+    if(chip){
+      selectDate(chip.dataset.id, { scrollRow:true });
+      return;
+    }
+
+    var rowBtn = e.target.closest(".row-btn");
+    if(rowBtn){
+      selectDate(rowBtn.dataset.toggle, { toggle:true, scrollChip:true });
+      return;
+    }
+
+    var cell = e.target.closest(".c-cell.active");
+    if(cell){
+      selectDate(cell.dataset.pick, { scrollChip:true });
+      return;
+    }
+
+    var tab = e.target.closest("[data-view]");
+    if(tab){
+      setView(tab.dataset.view);
+      return;
+    }
+
+    if(e.target.closest("#btn-empty")){
+      showEmpty = !showEmpty;
+      $("btn-empty").setAttribute("aria-pressed", showEmpty);
+      $("view-list").classList.toggle("show-all", showEmpty);
+    }
+  });
+})();
+</script>
+</body>
+</html>
